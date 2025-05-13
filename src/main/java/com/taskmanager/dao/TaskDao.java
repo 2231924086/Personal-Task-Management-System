@@ -40,4 +40,7 @@ public interface TaskDao {
 
     // 获取用户的任务统计信息
     int countByStatus(Integer userId, Integer status);
+
+    // 查询用户的所有任务（按优先级排序）
+    List<Task> findByUserIdOrderByPriority(Integer userId, boolean descending);
 }

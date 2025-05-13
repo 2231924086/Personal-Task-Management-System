@@ -265,4 +265,24 @@ public class TaskDaoImpl implements TaskDao {
         task.setModifiedDate(rs.getTimestamp("modified_date"));
         return task;
     }
+
+    @Override
+    public List<Task> findByUserIdOrderByPriority(Integer userId, boolean descending) {
+        List<Task> tasks = new ArrayList<>();
+        String order = descending ? "DESC" : "ASC";
+        String sql = "SELECT * FROM tasks WHERE user_id=? ORDER BY priority " + order + ", due_date";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, userId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    tasks.add(extractTaskFromResultSet(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return tasks;
+    }
 }

@@ -32,7 +32,12 @@ const elements = {
     categoryForm: document.getElementById('category-form'),
     categoryIdInput: document.getElementById('category-id'),
     categoryNameInput: document.getElementById('category-name'),
-    cancelCategoryBtn: document.getElementById('cancel-category-btn')
+    cancelCategoryBtn: document.getElementById('cancel-category-btn'),
+
+    priorityFilter: document.getElementById('priority-filter'),
+    sortBy: document.getElementById('sort-by'),
+    // 新增
+    taskPriorityInput: document.getElementById('task-priority'),
 };
 
 // 关闭模态框按钮
@@ -187,12 +192,21 @@ async function loadTasksByCategory(categoryId) {
 }
 
 // 渲染任务列表
+function getPriorityText(priority) {
+    const priorityMap = {
+        1: '低',
+        2: '中',
+        3: '高',
+        4: '紧急'
+    };
+    return priorityMap[priority] || '未知';
+}
 function renderTasks(tasks) {
     if (!tasks || tasks.length === 0) {
         elements.taskList.innerHTML = '<div class="empty-message">暂无任务</div>';
         return;
     }
-    
+
     const html = tasks.map(task => {
         return `<div class="task-item" data-id="${task.taskId}">
             <div class="task-info">
@@ -200,6 +214,11 @@ function renderTasks(tasks) {
                 <div class="task-description">${task.description || '无描述'}</div>
                 <div class="task-meta">
                     <span class="task-status status-${task.status}">${getStatusText(task.status)}</span>
+                    <!-- 优先级显示 -->
+                    <span class="priority priority-${task.priority}">
+                        <span class="priority-icon priority-icon-${task.priority}"></span>
+                        ${getPriorityText(task.priority)}
+                    </span>
                     <span class="task-due-date">截止: ${formatDate(task.dueDate)}</span>
                 </div>
             </div>
@@ -216,7 +235,7 @@ function renderTasks(tasks) {
             </div>
         </div>`;
     }).join('');
-    
+
     elements.taskList.innerHTML = html;
     
     // 添加任务操作事件
@@ -268,27 +287,33 @@ async function completeTask(taskId) {
 }
 
 // 打开编辑任务模态框
+// 打开编辑任务模态框
 async function openEditTaskModal(taskId) {
     try {
         // 这里简化处理，从DOM中获取任务信息
         // 实际应用中可能需要从服务器获取完整的任务信息
         const taskItem = document.querySelector(`.task-item[data-id="${taskId}"]`);
         if (!taskItem) return;
-        
+
         const title = taskItem.querySelector('.task-title').textContent;
         const description = taskItem.querySelector('.task-description').textContent;
         const dueDateText = taskItem.querySelector('.task-due-date').textContent.replace('截止: ', '');
-        
+
+        // 从DOM获取优先级
+        const priorityClass = taskItem.querySelector('.priority').classList[1];
+        const priority = priorityClass ? parseInt(priorityClass.split('-')[1]) : 1;
+
         // 设置模态框的值
         elements.taskIdInput.value = taskId;
         elements.taskNameInput.value = title;
         elements.taskDescriptionInput.value = description === '无描述' ? '' : description;
-        
+        elements.taskPriorityInput.value = priority; // 设置优先级
+
         // 日期格式转换为yyyy-MM-dd
         const dateParts = dueDateText.split('/');
         const formattedDate = `${dateParts[0]}-${dateParts[1].padStart(2, '0')}-${dateParts[2].padStart(2, '0')}`;
         elements.taskDueDateInput.value = formattedDate;
-        
+
         // 打开模态框
         elements.taskModal.style.display = 'block';
     } catch (error) {
@@ -350,35 +375,37 @@ function openAddTaskModal() {
 // 处理任务表单提交
 async function handleTaskFormSubmit(event) {
     event.preventDefault();
-    
+
     const taskId = elements.taskIdInput.value.trim();
     const taskName = elements.taskNameInput.value.trim();
     const description = elements.taskDescriptionInput.value.trim();
     const categoryId = elements.taskCategorySelect.value;
     const dueDate = elements.taskDueDateInput.value;
-    
-    if (!taskName || !categoryId || !dueDate) {
+    const priority = elements.taskPriorityInput.value; // 获取优先级
+
+    if (!taskName || !categoryId || !dueDate || !priority) {
         showError('请填写所有必填字段');
         return;
     }
-    
+
     // 构建请求参数
     const formData = new URLSearchParams();
     formData.append('taskName', taskName);
     formData.append('description', description);
     formData.append('categoryId', categoryId);
     formData.append('dueDate', dueDate);
-    
+    formData.append('priority', priority); // 添加优先级参数
+
     try {
         // 根据是否有taskId判断是创建还是更新
-        const url = taskId 
-            ? `${API_URL.task}/update` 
+        const url = taskId
+            ? `${API_URL.task}/update`
             : `${API_URL.task}/create`;
-            
+
         if (taskId) {
             formData.append('taskId', taskId);
         }
-        
+
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -387,9 +414,9 @@ async function handleTaskFormSubmit(event) {
             body: formData.toString(),
             credentials: 'include'
         });
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
             // 关闭模态框
             elements.taskModal.style.display = 'none';
@@ -587,6 +614,12 @@ function setupEventListeners() {
         clearTimeout(elements.searchInput.timer);
         elements.searchInput.timer = setTimeout(handleSearch, 300);
     });
+
+    // 优先级筛选器变化
+    elements.priorityFilter.addEventListener('change', handlePriorityFilterChange);
+
+    // 排序方式变化
+    elements.sortBy.addEventListener('change', handleSortChange);
     
     // 点击模态框外部关闭模态框
     window.addEventListener('click', function(e) {
@@ -612,6 +645,71 @@ async function initialize() {
     
     // 加载任务列表
     await loadTasks();
+}
+
+// 按优先级筛选任务
+async function loadTasksByPriority(priority) {
+    try {
+        elements.taskList.innerHTML = '<div class="loading-message">正在加载任务...</div>';
+
+        const response = await fetch(`${API_URL.task}/priority?priority=${priority}`, {
+            credentials: 'include'
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            renderTasks(data.tasks);
+        } else {
+            elements.taskList.innerHTML = '<div class="empty-message">加载任务失败</div>';
+        }
+    } catch (error) {
+        console.error('按优先级加载任务失败:', error);
+        elements.taskList.innerHTML = '<div class="empty-message">加载任务失败，请刷新重试</div>';
+    }
+}
+
+// 按优先级排序任务
+async function loadTasksOrderByPriority() {
+    try {
+        elements.taskList.innerHTML = '<div class="loading-message">正在加载任务...</div>';
+
+        // 默认降序（高优先级在前）
+        const response = await fetch(`${API_URL.task}/orderByPriority`, {
+            credentials: 'include'
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            renderTasks(data.tasks);
+        } else {
+            elements.taskList.innerHTML = '<div class="empty-message">加载任务失败</div>';
+        }
+    } catch (error) {
+        console.error('按优先级排序任务失败:', error);
+        elements.taskList.innerHTML = '<div class="empty-message">加载任务失败，请刷新重试</div>';
+    }
+}
+
+// 处理排序变化
+function handleSortChange() {
+    const sortBy = elements.sortBy.value;
+
+    if (sortBy === 'dueDate') {
+        loadTasks(); // 默认就是按截止日期排序
+    } else if (sortBy === 'priority') {
+        loadTasksOrderByPriority();
+    }
+}
+
+// 处理优先级筛选变化
+function handlePriorityFilterChange() {
+    const priority = elements.priorityFilter.value;
+
+    if (priority === 'all') {
+        loadTasks();
+    } else {
+        loadTasksByPriority(priority);
+    }
 }
 
 // 页面加载时执行初始化

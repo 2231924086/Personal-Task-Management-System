@@ -80,7 +80,10 @@ public class TaskServlet extends HttpServlet {
                 handleSearchTasks(request, response, result);
             } else if ("/count".equals(pathInfo)) {
                 handleGetTaskCount(request, response, result);
-            } else {
+            } else if ("/orderByPriority".equals(pathInfo)) {
+                handleGetTasksOrderByPriority(request, response, result);
+            }
+            else {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 result.put("success", false);
                 result.put("message", "请求的接口不存在");
@@ -110,6 +113,7 @@ public class TaskServlet extends HttpServlet {
         String description = request.getParameter("description");
         String categoryIdStr = request.getParameter("categoryId");
         String dueDateStr = request.getParameter("dueDate");
+        String priorityStr = request.getParameter("priority");
 
         if (title == null || categoryIdStr == null || dueDateStr == null) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -122,12 +126,19 @@ public class TaskServlet extends HttpServlet {
             Integer categoryId = Integer.parseInt(categoryIdStr);
             Date dueDate = dateFormat.parse(dueDateStr);
 
+            // 解析优先级，默认为1（低）
+            Integer priority = 1;
+            if (priorityStr != null && !priorityStr.isEmpty()) {
+                priority = Integer.parseInt(priorityStr);
+            }
+
             Task task = new Task();
             task.setUserId(userId);
             task.setTitle(title);
             task.setDescription(description);
             task.setCategoryId(categoryId);
-            task.setPriority(1);
+//            task.setPriority(1);
+            task.setPriority(priority);
             task.setDueDate(dueDate);
 
             if (taskService.createTask(task)) {
@@ -178,6 +189,7 @@ public class TaskServlet extends HttpServlet {
             String description = request.getParameter("description");
             String categoryIdStr = request.getParameter("categoryId");
             String dueDateStr = request.getParameter("dueDate");
+            String priorityStr = request.getParameter("priority");
 
             if (title == null || categoryIdStr == null || dueDateStr == null) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -188,6 +200,10 @@ public class TaskServlet extends HttpServlet {
 
             Integer categoryId = Integer.parseInt(categoryIdStr);
             Date dueDate = dateFormat.parse(dueDateStr);
+            Integer priority = 1;
+            if (priorityStr != null && !priorityStr.isEmpty()) {
+                priority = Integer.parseInt(priorityStr);
+            }
 
             Task task = new Task();
             task.setTaskId(taskId);
@@ -195,7 +211,8 @@ public class TaskServlet extends HttpServlet {
             task.setTitle(title);
             task.setDescription(description);
             task.setCategoryId(categoryId);
-            task.setPriority(1);
+//            task.setPriority(1);
+            task.setPriority(priority);
             task.setDueDate(dueDate);
 
             if (taskService.updateTask(task)) {
@@ -514,4 +531,27 @@ public class TaskServlet extends HttpServlet {
             result.put("message", "状态格式错误");
         }
     }
+    private void handleGetTasksOrderByPriority(HttpServletRequest request, HttpServletResponse response,
+                                               Map<String, Object> result) throws IOException {
+        HttpSession session = request.getSession();
+        Integer userId = (Integer) session.getAttribute("userId");
+        if (userId == null) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            result.put("success", false);
+            result.put("message", "未登录");
+            return;
+        }
+
+        // 获取降序还是升序参数，默认降序（高优先级在前）
+        String orderStr = request.getParameter("order");
+        boolean descending = true;
+        if ("asc".equals(orderStr)) {
+            descending = false;
+        }
+
+        List<Task> tasks = taskService.getUserTasksOrderByPriority(userId, descending);
+        result.put("success", true);
+        result.put("tasks", tasks);
+    }
+
 }

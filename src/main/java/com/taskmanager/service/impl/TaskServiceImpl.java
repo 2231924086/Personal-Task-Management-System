@@ -135,4 +135,13 @@ public class TaskServiceImpl implements TaskService {
         Task task = taskDao.findById(taskId);
         return task != null && task.getUserId().equals(userId);
     }
+
+    @Override
+    public List<Task> getUserTasksOrderByPriority(Integer userId, boolean descending) {
+        if (userId == null) {
+            return null;
+        }
+        List<Task> tasks = taskDao.findByUserIdOrderByPriority(userId, descending);
+        return tasks;
+    }
 }

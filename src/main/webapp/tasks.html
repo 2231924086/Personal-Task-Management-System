@@ -45,6 +45,17 @@
                         <option value="1">进行中</option>
                         <option value="2">已完成</option>
                     </select>
+                    <select id="priority-filter" class="filter-select">
+                        <option value="all">所有优先级</option>
+                        <option value="1">低</option>
+                        <option value="2">中</option>
+                        <option value="3">高</option>
+                        <option value="4">紧急</option>
+                    </select>
+                    <select id="sort-by" class="filter-select">
+                        <option value="dueDate">按截止日期</option>
+                        <option value="priority">按优先级</option>
+                    </select>
                     <input type="text" id="search-input" class="search-input" placeholder="搜索任务...">
                 </div>
 
@@ -85,6 +96,15 @@
                     <div class="form-group">
                         <label for="task-due-date">截止日期</label>
                         <input type="date" id="task-due-date" name="dueDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="task-priority">优先级</label>
+                        <select id="task-priority" name="priority" required>
+                            <option value="1">低</option>
+                            <option value="2">中</option>
+                            <option value="3">高</option>
+                            <option value="4">紧急</option>
+                        </select>
                     </div>
                     <div class="form-actions">
                         <button type="button" class="btn-cancel" id="cancel-task-btn">取消</button>

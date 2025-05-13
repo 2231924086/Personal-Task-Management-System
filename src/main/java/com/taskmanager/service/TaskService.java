@@ -43,4 +43,7 @@ public interface TaskService {
 
     // 验证任务是否属于指定用户
     boolean isTaskBelongsToUser(Integer taskId, Integer userId);
+
+    // 获取用户的所有任务（按优先级排序）
+    List<Task> getUserTasksOrderByPriority(Integer userId, boolean descending);
 }
