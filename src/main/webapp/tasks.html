@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>任务管理系统 - 我的任务</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="tasks.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 顶部导航栏 -->
+        <header class="app-header">
+            <div class="logo">任务管理系统</div>
+            <div class="user-info">
+                <span id="username-display">加载中...</span>
+                <button id="logout-btn" class="btn-logout">退出登录</button>
+            </div>
+        </header>
+
+        <div class="main-container">
+            <!-- 左侧边栏 -->
+            <aside class="sidebar">
+                <div class="sidebar-section">
+                    <h3>分类管理</h3>
+                    <ul id="category-list" class="category-list">
+                        <li class="loading">加载中...</li>
+                    </ul>
+                    <button id="add-category-btn" class="btn-add">添加分类</button>
+                </div>
+            </aside>
+
+            <!-- 主内容区域 -->
+            <main class="content">
+                <div class="content-header">
+                    <h2>我的任务</h2>
+                    <button id="add-task-btn" class="btn-primary">新建任务</button>
+                </div>
+
+                <!-- 过滤器 -->
+                <div class="filters">
+                    <select id="status-filter" class="filter-select">
+                        <option value="all">所有状态</option>
+                        <option value="0">未完成</option>
+                        <option value="1">进行中</option>
+                        <option value="2">已完成</option>
+                    </select>
+                    <input type="text" id="search-input" class="search-input" placeholder="搜索任务...">
+                </div>
+
+                <!-- 任务列表 -->
+                <div class="task-list-container">
+                    <div id="task-list" class="task-list">
+                        <div class="loading-message">正在加载任务...</div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 新建/编辑任务的模态框 -->
+    <div id="task-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">新建任务</h3>
+                <span class="close-btn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="task-form">
+                    <input type="hidden" id="task-id">
+                    <div class="form-group">
+                        <label for="task-name">任务名称</label>
+                        <input type="text" id="task-name" name="taskName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="task-description">任务描述</label>
+                        <textarea id="task-description" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="task-category">所属分类</label>
+                        <select id="task-category" name="categoryId" required>
+                            <option value="">请选择分类</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="task-due-date">截止日期</label>
+                        <input type="date" id="task-due-date" name="dueDate" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" id="cancel-task-btn">取消</button>
+                        <button type="submit" class="btn-primary">保存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加分类的模态框 -->
+    <div id="category-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="category-modal-title">添加分类</h3>
+                <span class="close-btn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="category-form">
+                    <input type="hidden" id="category-id">
+                    <div class="form-group">
+                        <label for="category-name">分类名称</label>
+                        <input type="text" id="category-name" name="categoryName" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" id="cancel-category-btn">取消</button>
+                        <button type="submit" class="btn-primary">保存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="tasks.js"></script>
+</body>
+</html>

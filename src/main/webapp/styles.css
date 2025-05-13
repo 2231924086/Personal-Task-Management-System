@@ -1,0 +1,140 @@
+/* 全局样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Microsoft YaHei", Arial, sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 100%;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.form-container {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 450px;
+    padding: 30px;
+}
+
+h1 {
+    text-align: center;
+    color: #4a67e8;
+    margin-bottom: 10px;
+    font-size: 24px;
+}
+
+h2 {
+    text-align: center;
+    color: #555;
+    margin-bottom: 20px;
+    font-size: 18px;
+    font-weight: normal;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus {
+    border-color: #4a67e8;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(74, 103, 232, 0.2);
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 12px;
+    background-color: #4a67e8;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #3b55cc;
+}
+
+.form-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.form-footer a {
+    color: #4a67e8;
+    text-decoration: none;
+}
+
+.form-footer a:hover {
+    text-decoration: underline;
+}
+
+.error-message {
+    color: #e74c3c;
+    padding: 10px;
+    margin-bottom: 15px;
+    background-color: #fceaea;
+    border-radius: 4px;
+    display: none;
+}
+
+.show {
+    display: block;
+}
+
+.check-message {
+    font-size: 12px;
+    color: #666;
+}
+
+.check-message.error {
+    color: #e74c3c;
+}
+
+.check-message.success {
+    color: #2ecc71;
+}
+
+.hint {
+    display: block;
+    font-size: 12px;
+    color: #888;
+    margin-top: 3px;
+}

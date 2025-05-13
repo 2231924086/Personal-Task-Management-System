@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>任务管理系统 - 注册</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h1>任务管理系统</h1>
+            <h2>用户注册</h2>
+            <div id="error-message" class="error-message"></div>
+            <form id="register-form">
+                <div class="form-group">
+                    <label for="username">用户名</label>
+                    <input type="text" id="username" name="username" required>
+                    <small id="username-check" class="check-message"></small>
+                </div>
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    <input type="password" id="password" name="password" required>
+                    <small class="hint">密码长度至少6位</small>
+                </div>
+                <div class="form-group">
+                    <label for="confirm-password">确认密码</label>
+                    <input type="password" id="confirm-password" name="confirmPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">邮箱</label>
+                    <input type="email" id="email" name="email" required>
+                    <small id="email-check" class="check-message"></small>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn-primary">注册</button>
+                </div>
+                <div class="form-footer">
+                    <p>已有账号？<a href="login.html">立即登录</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
