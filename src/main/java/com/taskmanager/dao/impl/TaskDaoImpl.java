@@ -258,6 +258,7 @@ public class TaskDaoImpl implements TaskDao {
         task.setCategoryId(rs.getInt("category_id"));
         task.setTitle(rs.getString("title"));
         task.setContent(rs.getString("content"));
+        task.setDescription(rs.getString("content"));
         task.setPriority(rs.getInt("priority"));
         task.setDueDate(rs.getDate("due_date"));
         task.setStatus(rs.getInt("status"));

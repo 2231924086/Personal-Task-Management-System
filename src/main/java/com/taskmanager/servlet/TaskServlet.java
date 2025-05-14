@@ -139,6 +139,7 @@ public class TaskServlet extends HttpServlet {
             task.setUserId(userId);
             task.setTitle(title);
             task.setDescription(description);
+            task.setContent(description);
             task.setCategoryId(categoryId);
 //            task.setPriority(1);
             task.setPriority(priority);
@@ -213,6 +214,7 @@ public class TaskServlet extends HttpServlet {
             task.setUserId(userId);
             task.setTitle(title);
             task.setDescription(description);
+            task.setContent(description);
             task.setCategoryId(categoryId);
 //            task.setPriority(1);
             task.setPriority(priority);
