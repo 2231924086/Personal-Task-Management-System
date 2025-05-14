@@ -54,8 +54,30 @@ function showError(message) {
 }
 
 function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('zh-CN');
+    if (!dateString) return '未设置';
+
+    try {
+        // 处理多种可能的日期格式
+        let date;
+        // 尝试处理时间戳（数字或字符串形式）
+        if (!isNaN(Number(dateString))) {
+            date = new Date(Number(dateString));
+        }
+        // 处理ISO格式的字符串
+        else {
+            date = new Date(dateString);
+        }
+
+        // 检查日期是否有效
+        if (isNaN(date.getTime())) {
+            return '日期无效';
+        }
+
+        return date.toLocaleDateString('zh-CN');
+    } catch (e) {
+        console.error('日期格式化错误:', e, dateString);
+        return '日期错误';
+    }
 }
 
 function getStatusText(status) {

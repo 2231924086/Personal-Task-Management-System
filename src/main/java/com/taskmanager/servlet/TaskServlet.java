@@ -18,11 +18,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.google.gson.GsonBuilder;
 
 @WebServlet("/api/task/*")
 public class TaskServlet extends HttpServlet {
     private final TaskService taskService = new TaskServiceImpl();
-    private final Gson gson = new Gson();
+    private final Gson gson = new GsonBuilder()
+            .setDateFormat("yyyy-MM-dd")
+            .create();
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     @Override
