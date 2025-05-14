@@ -312,34 +312,45 @@ async function completeTask(taskId) {
 // 打开编辑任务模态框
 async function openEditTaskModal(taskId) {
     try {
-        // 这里简化处理，从DOM中获取任务信息
-        // 实际应用中可能需要从服务器获取完整的任务信息
-        const taskItem = document.querySelector(`.task-item[data-id="${taskId}"]`);
-        if (!taskItem) return;
-
-        const title = taskItem.querySelector('.task-title').textContent;
-        const description = taskItem.querySelector('.task-description').textContent;
-        const dueDateText = taskItem.querySelector('.task-due-date').textContent.replace('截止: ', '');
-
-        // 从DOM获取优先级
-        const priorityClass = taskItem.querySelector('.priority').classList[1];
-        const priority = priorityClass ? parseInt(priorityClass.split('-')[1]) : 1;
-
-        // 设置模态框的值
-        elements.taskIdInput.value = taskId;
-        elements.taskNameInput.value = title;
-        elements.taskDescriptionInput.value = description === '无描述' ? '' : description;
-        elements.taskPriorityInput.value = priority; // 设置优先级
-
-        // 日期格式转换为yyyy-MM-dd
-        const dateParts = dueDateText.split('/');
-        const formattedDate = `${dateParts[0]}-${dateParts[1].padStart(2, '0')}-${dateParts[2].padStart(2, '0')}`;
-        elements.taskDueDateInput.value = formattedDate;
-
-        // 打开模态框
+        // Show loading or disable form during fetch
         elements.taskModal.style.display = 'block';
+        const submitButton = elements.taskForm.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        elements.taskForm.reset();
+
+        // Fetch task data from server
+        const response = await fetch(`${API_URL.task}/detail?taskId=${taskId}`, {
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            const task = data.task;
+
+            // Set form values with complete task data
+            elements.taskIdInput.value = task.taskId;
+            elements.taskNameInput.value = task.title;
+            elements.taskDescriptionInput.value = task.description || task.content || '';
+            elements.taskCategorySelect.value = task.categoryId;
+            elements.taskPriorityInput.value = task.priority;
+
+            // Format date for the input
+            const dueDate = new Date(task.dueDate);
+            const year = dueDate.getFullYear();
+            const month = String(dueDate.getMonth() + 1).padStart(2, '0');
+            const day = String(dueDate.getDate()).padStart(2, '0');
+            elements.taskDueDateInput.value = `${year}-${month}-${day}`;
+        } else {
+            elements.taskModal.style.display = 'none';
+            showError(data.message || '无法获取任务详情');
+        }
+
+        // Re-enable the submit button
+        submitButton.disabled = false;
     } catch (error) {
         console.error('打开编辑模态框失败:', error);
+        elements.taskModal.style.display = 'none';
         showError('操作失败，请稍后再试');
     }
 }

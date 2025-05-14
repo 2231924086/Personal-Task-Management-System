@@ -71,6 +71,8 @@ public class TaskServlet extends HttpServlet {
         try {
             if ("/list".equals(pathInfo)) {
                 handleGetUserTasks(request, response, result);
+            } else if ("/detail".equals(pathInfo)) {
+                handleGetTaskDetail(request, response, result);
             } else if ("/category".equals(pathInfo)) {
                 handleGetCategoryTasks(request, response, result);
             } else if ("/status".equals(pathInfo)) {
@@ -169,7 +171,7 @@ public class TaskServlet extends HttpServlet {
     }
 
     private void handleUpdateTask(HttpServletRequest request, HttpServletResponse response,
-            Map<String, Object> result) throws IOException {
+                                  Map<String, Object> result) throws IOException {
         HttpSession session = request.getSession();
         Integer userId = (Integer) session.getAttribute("userId");
         if (userId == null) {
@@ -189,6 +191,16 @@ public class TaskServlet extends HttpServlet {
 
         try {
             Integer taskId = Integer.parseInt(taskIdStr);
+
+            // Get the existing task to preserve its status
+            Task existingTask = taskService.getTaskById(taskId);
+            if (existingTask == null || !existingTask.getUserId().equals(userId)) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                result.put("success", false);
+                result.put("message", "任务不存在或无权限修改");
+                return;
+            }
+
             String title = request.getParameter("taskName");
             String description = request.getParameter("description");
             String categoryIdStr = request.getParameter("categoryId");
@@ -216,9 +228,11 @@ public class TaskServlet extends HttpServlet {
             task.setDescription(description);
             task.setContent(description);
             task.setCategoryId(categoryId);
-//            task.setPriority(1);
             task.setPriority(priority);
             task.setDueDate(dueDate);
+
+            // Preserve the existing status
+            task.setStatus(existingTask.getStatus());
 
             if (taskService.updateTask(task)) {
                 result.put("success", true);
@@ -226,7 +240,7 @@ public class TaskServlet extends HttpServlet {
             } else {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 result.put("success", false);
-                result.put("message", "任务不存在");
+                result.put("message", "更新任务失败");
             }
         } catch (NumberFormatException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -239,7 +253,8 @@ public class TaskServlet extends HttpServlet {
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             result.put("success", false);
-            result.put("message", "服务器内部错误");
+            result.put("message", "服务器内部错误: " + e.getMessage());
+            e.printStackTrace(); // Add this for better debugging
         }
     }
 
@@ -559,4 +574,50 @@ public class TaskServlet extends HttpServlet {
         result.put("tasks", tasks);
     }
 
+    private void handleGetTaskDetail(HttpServletRequest request, HttpServletResponse response,
+                                     Map<String, Object> result) throws IOException {
+        HttpSession session = request.getSession();
+        Integer userId = (Integer) session.getAttribute("userId");
+        if (userId == null) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            result.put("success", false);
+            result.put("message", "未登录");
+            return;
+        }
+
+        String taskIdStr = request.getParameter("taskId");
+        if (taskIdStr == null) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            result.put("success", false);
+            result.put("message", "参数不完整");
+            return;
+        }
+
+        try {
+            Integer taskId = Integer.parseInt(taskIdStr);
+            Task task = taskService.getTaskById(taskId);
+
+            if (task == null) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                result.put("success", false);
+                result.put("message", "任务不存在");
+                return;
+            }
+
+            // Verify the task belongs to the current user
+            if (!task.getUserId().equals(userId)) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                result.put("success", false);
+                result.put("message", "无权访问该任务");
+                return;
+            }
+
+            result.put("success", true);
+            result.put("task", task);
+        } catch (NumberFormatException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            result.put("success", false);
+            result.put("message", "任务ID格式错误");
+        }
+    }
 }
